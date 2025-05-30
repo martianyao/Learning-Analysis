@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 6: Enhanced Assessment Input</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .main-card {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+        }
+
+        .engagement-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 5px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .engagement-btn:hover {
+            transform: scale(1.1);
+        }
+
+        input[type="radio"]:checked+.engagement-btn {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .engagement-1,
+        .engagement-2,
+        .engagement-3 {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .engagement-4,
+        .engagement-5,
+        .engagement-6 {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .engagement-7,
+        .engagement-8,
+        .engagement-9 {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .quiz-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quiz-cell:hover {
+            background-color: #e9ecef;
+        }
+
+        .quiz-correct {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #28a745;
+        }
+
+        .quiz-incorrect {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .attainment-btn {
+            margin: 5px;
+            min-width: 120px;
+        }
+
+        .section-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 20px;
+        }
+
+        .student-selector {
+            background-color: #e7f3ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-4">
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active">Enhanced Assessment Input</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h1 class="display-5">Two-Part Assessment System: Engagement Rate (1-9) + Attainment Analysis</h1>
+            <p class="lead text-muted">Input comprehensive assessment data for AI-powered insights and predictions</p>
+        </div>
+
+        <!-- Student Selector -->
+        <div class="student-selector">
+            <h4>👨‍🎓 Select Student</h4>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <select class="form-select form-select-lg" id="studentSelect">
+                        <option value="">Choose a student...</option>
+                        {% for student in students %}
+                        <option value="{{ student.id }}">{{ student.name }} - {{ student.student_id }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-info" onclick="fillDemoData()">📋 Load Demo Data</button>
+                    <button class="btn btn-warning" onclick="clearForm()">🔄 Clear Form</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Assessment Card -->
+        <div class="card main-card">
+            <div class="card-body p-4">
+                <div class="row">
+                    <!-- Left Column: Quiz Questions -->
+                    <div class="col-md-6">
+                        <div class="section-card card">
+                            <div class="card-body">
+                                <h4 class="card-title">📝 Assessment Score</h4>
+                                <p class="text-muted">Click each question to mark as correct (✓) or incorrect (✗)</p>
+
+                                <div class="text-center mb-3">
+                                    <a href="/quiz_paper" target="_blank" class="btn btn-info">
+                                        <i class="fas fa-file-alt me-2"></i>View/Take 15-Question Quiz
+                                    </a>
+                                </div>
+
+                                <div class="quiz-grid" id="quizGrid">
+                                    <!-- Questions will be generated by JavaScript -->
+                                </div>
+
+                                <div class="text-center mt-3">
+                                    <h5>Score: <span id="scoreDisplay">0/15</span></h5>
+                                    <div class="progress" style="height: 25px;">
+                                        <div class="progress-bar" id="scoreProgress" role="progressbar"
+                                            style="width: 0%">0%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Notes -->
+                        <div class="section-card card mt-3">
+                            <div class="card-body">
+                                <h4 class="card-title">📝 Additional Notes:</h4>
+                                <textarea class="form-control" id="notes" rows="4"
+                                    placeholder="Specific observations, areas of strength/concern..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Engagement & Attainment -->
+                    <div class="col-md-6">
+                        <!-- Engagement Rate -->
+                        <div class="section-card card">
+                            <div class="card-body">
+                                <h4 class="card-title">❤️ Engagement Rate (1-9)</h4>
+                                <div class="text-center">
+                                    <div class="btn-group" role="group">
+                                        {% for i in range(1, 10) %}
+                                        <input type="radio" class="btn-check" name="engagement" id="eng{{ i }}"
+                                            value="{{ i }}" autocomplete="off">
+                                        <label class="btn engagement-btn engagement-{{ i }}" for="eng{{ i }}">{{ i
+                                            }}</label>
+                                        {% endfor %}
+                                    </div>
+                                    <p class="mt-3 text-muted" id="engagementText">
+                                        1-3: Disengaged, 4-6: Moderate, 7-9: Highly Engaged
+                                    </p>
+                                </div>
+
+                                <h5 class="mt-4">👁️ Observed Evidence:</h5>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="questioning">
+                                            <label class="form-check-label" for="questioning">Question Asking</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="answering">
+                                            <label class="form-check-label" for="answering">Question Answering</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="focus">
+                                            <label class="form-check-label" for="focus">Sustained Focus</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="activity">
+                                            <label class="form-check-label" for="activity">Activity Engagement</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Attainment Analysis -->
+                        <div class="section-card card mt-3">
+                            <div class="card-body">
+                                <h4 class="card-title">🏆 Attainment Analysis</h4>
+
+                                <h5>📚 Preparation Outcome</h5>
+                                <div class="btn-group d-flex flex-wrap" role="group">
+                                    <input type="radio" class="btn-check" name="preparation" id="prep1" value="emerging"
+                                        autocomplete="off">
+                                    <label class="btn btn-outline-danger attainment-btn" for="prep1">Emerging</label>
+
+                                    <input type="radio" class="btn-check" name="preparation" id="prep2"
+                                        value="developing" autocomplete="off">
+                                    <label class="btn btn-outline-warning attainment-btn" for="prep2">Developing</label>
+
+                                    <input type="radio" class="btn-check" name="preparation" id="prep3" value="secure"
+                                        autocomplete="off">
+                                    <label class="btn btn-outline-success attainment-btn" for="prep3">Secure</label>
+
+                                    <input type="radio" class="btn-check" name="preparation" id="prep4" value="mastery"
+                                        autocomplete="off">
+                                    <label class="btn btn-outline-primary attainment-btn" for="prep4">Mastery</label>
+                                </div>
+                                <small class="text-muted">Based on homework, revision, and pre-class preparation</small>
+
+                                <h5 class="mt-3">💻 In-Class Practice</h5>
+                                <div class="btn-group d-flex flex-wrap" role="group">
+                                    <input type="radio" class="btn-check" name="practice" id="prac1" value="emerging"
+                                        autocomplete="off">
+                                    <label class="btn btn-outline-danger attainment-btn" for="prac1">Emerging</label>
+
+                                    <input type="radio" class="btn-check" name="practice" id="prac2" value="developing"
+                                        autocomplete="off">
+                                    <label class="btn btn-outline-warning attainment-btn" for="prac2">Developing</label>
+
+                                    <input type="radio" class="btn-check" name="practice" id="prac3" value="secure"
+                                        autocomplete="off">
+                                    <label class="btn btn-outline-success attainment-btn" for="prac3">Secure</label>
+
+                                    <input type="radio" class="btn-check" name="practice" id="prac4" value="mastery"
+                                        autocomplete="off">
+                                    <label class="btn btn-outline-primary attainment-btn" for="prac4">Mastery</label>
+                                </div>
+                                <small class="text-muted">Based on class activities and practical work</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary btn-lg px-5" onclick="generateAnalysis()">
+                        🤖 Generate AI Performance Report
+                    </button>
+                    <button class="btn btn-secondary btn-lg px-5 ms-3" onclick="saveProgress()">
+                        💾 Save Progress
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize quiz grid
+        function initializeQuizGrid() {
+            const grid = document.getElementById('quizGrid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 15; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'quiz-cell';
+                cell.id = `q${i}`;
+                cell.textContent = i;
+                cell.onclick = () => toggleAnswer(i);
+                grid.appendChild(cell);
+            }
+        }
+
+        // Toggle answer state
+        function toggleAnswer(questionNum) {
+            const cell = document.getElementById(`q${questionNum}`);
+
+            if (cell.textContent === questionNum.toString()) {
+                cell.textContent = '✓';
+                cell.className = 'quiz-cell quiz-correct';
+            } else if (cell.textContent === '✓') {
+                cell.textContent = '✗';
+                cell.className = 'quiz-cell quiz-incorrect';
+            } else {
+                cell.textContent = questionNum;
+                cell.className = 'quiz-cell';
+            }
+
+            updateScore();
+        }
+
+        // Update score display
+        function updateScore() {
+            let correct = 0;
+            let total = 0;
+
+            for (let i = 1; i <= 15; i++) {
+                const cell = document.getElementById(`q${i}`);
+                if (cell.textContent === '✓') {
+                    correct++;
+                    total++;
+                } else if (cell.textContent === '✗') {
+                    total++;
+                }
+            }
+
+            const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
+            document.getElementById('scoreDisplay').textContent = `${correct}/${total}`;
+
+            const progressBar = document.getElementById('scoreProgress');
+            progressBar.style.width = `${percentage}%`;
+            progressBar.textContent = `${percentage}%`;
+
+            // Change color based on score
+            progressBar.className = 'progress-bar';
+            if (percentage >= 80) {
+                progressBar.classList.add('bg-success');
+            } else if (percentage >= 60) {
+                progressBar.classList.add('bg-warning');
+            } else {
+                progressBar.classList.add('bg-danger');
+            }
+        }
+
+        // Generate analysis and redirect to personalized report
+        function generateAnalysis() {
+            // Get selected student
+            const studentId = document.getElementById('studentSelect').value;
+            if (!studentId) {
+                alert('Please select a student first!');
+                return;
+            }
+
+            // Get engagement rate
+            const engagementRate = document.querySelector('input[name="engagement"]:checked')?.value || 5;
+
+            // Collect quiz answers
+            const quizAnswers = {};
+            for (let i = 1; i <= 15; i++) {
+                const cell = document.getElementById(`q${i}`);
+                if (cell.textContent === '✓') {
+                    quizAnswers[i.toString()] = 'correct';
+                } else if (cell.textContent === '✗') {
+                    quizAnswers[i.toString()] = 'incorrect';
+                }
+            }
+
+            // Validate quiz answers
+            if (Object.keys(quizAnswers).length === 0) {
+                alert('Please mark at least one quiz answer!');
+                return;
+            }
+
+            // Collect engagement evidence
+            const engagementEvidence = {
+                questioning: document.getElementById('questioning').checked,
+                answering: document.getElementById('answering').checked,
+                focus: document.getElementById('focus').checked,
+                activity: document.getElementById('activity').checked
+            };
+
+            // Get attainment levels
+            const preparationOutcome = document.querySelector('input[name="preparation"]:checked')?.value || 'developing';
+            const inClassPractice = document.querySelector('input[name="practice"]:checked')?.value || 'developing';
+
+            // Get notes
+            const notes = document.getElementById('notes').value;
+
+            // Show loading state
+            const button = event.target;
+            button.disabled = true;
+            button.innerHTML = '⏳ Generating Personalized Analysis...';
+
+            // Prepare data for submission
+            const assessmentData = {
+                student_id: parseInt(studentId),
+                engagement_rate: parseInt(engagementRate),
+                engagement_evidence: engagementEvidence,
+                preparation_outcome: preparationOutcome,
+                in_class_practice: inClassPractice,
+                quiz_answers: quizAnswers,
+                notes: notes
+            };
+
+            // Submit to API
+            fetch('/api/submit_comprehensive_assessment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(assessmentData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirect to personalized report
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert('Error generating analysis: ' + (data.error || 'Unknown error'));
+                        button.disabled = false;
+                        button.innerHTML = '🤖 Generate AI Performance Report';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                    button.disabled = false;
+                    button.innerHTML = '🤖 Generate AI Performance Report';
+                });
+        }
+
+        // Fill demo data
+        function fillDemoData() {
+            // Set first available student
+            const studentSelect = document.getElementById('studentSelect');
+            if (studentSelect.options.length > 1) {
+                studentSelect.value = studentSelect.options[1].value;
+            }
+
+            // Set engagement rate
+            document.getElementById('eng7').checked = true;
+
+            // Set quiz answers
+            const demoAnswers = {
+                1: '✓', 2: '✗', 3: '✓', 4: '✗', 5: '✓',
+                6: '✓', 7: '✗', 8: '✓', 9: '✓', 10: '✗',
+                11: '✓', 12: '✓', 13: '✗', 14: '✓', 15: '✗'
+            };
+
+            for (let i = 1; i <= 15; i++) {
+                const cell = document.getElementById(`q${i}`);
+                cell.textContent = demoAnswers[i];
+                if (demoAnswers[i] === '✓') {
+                    cell.className = 'quiz-cell quiz-correct';
+                } else {
+                    cell.className = 'quiz-cell quiz-incorrect';
+                }
+            }
+
+            updateScore();
+
+            // Set engagement evidence
+            document.getElementById('questioning').checked = true;
+            document.getElementById('answering').checked = true;
+            document.getElementById('focus').checked = true;
+            document.getElementById('activity').checked = false;
+
+            // Set attainment levels
+            document.getElementById('prep3').checked = true; // Secure
+            document.getElementById('prac2').checked = true; // Developing
+
+            // Set notes
+            document.getElementById('notes').value = 'Alice shows strong engagement in class discussions and demonstrates good understanding of atomic structure. However, she struggles with chemical bonding concepts and needs more practice with calculations.';
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('studentSelect').value = '';
+            document.querySelectorAll('input[type="radio"]').forEach(input => input.checked = false);
+            document.querySelectorAll('input[type="checkbox"]').forEach(input => input.checked = false);
+            document.getElementById('notes').value = '';
+            initializeQuizGrid();
+            updateScore();
+        }
+
+        // Save progress (placeholder)
+        function saveProgress() {
+            alert('Progress saved! (This is a demo - in production, this would save to the database)');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeQuizGrid();
+
+            // Update engagement text when selection changes
+            document.querySelectorAll('input[name="engagement"]').forEach(input => {
+                input.addEventListener('change', function () {
+                    const value = parseInt(this.value);
+                    const text = document.getElementById('engagementText');
+                    if (value <= 3) {
+                        text.textContent = `${value}/9 - Low Engagement: Student appears disengaged`;
+                    } else if (value <= 6) {
+                        text.textContent = `${value}/9 - Moderate Engagement: Some participation observed`;
+                    } else {
+                        text.textContent = `${value}/9 - High Engagement: Actively participating and focused`;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

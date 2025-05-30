@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - IGCSE Chemistry Assessment</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .navbar-brand,
+        .navbar-nav .nav-link {
+            color: white !important;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .icon-students {
+            color: var(--success-color);
+        }
+
+        .icon-assessments {
+            color: var(--warning-color);
+        }
+
+        .icon-ai {
+            color: var(--danger-color);
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 500;
+        }
+
+        .quick-action-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-5px);
+            color: white;
+            text-decoration: none;
+        }
+
+        .ai-insight-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .table-modern {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-modern thead {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .table-modern tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-flask me-2"></i>
+                IGCSE Chemistry Assessment
+            </a>
+
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i>
+                    Welcome, {{ session.username or 'Demo Teacher' }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header fade-in">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2">
+                            <i class="fas fa-tachometer-alt me-3"></i>
+                            Teacher Dashboard
+                        </h1>
+                        <p class="mb-0 opacity-75">
+                            Manage students and analyze chemistry assessment performance
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="badge"
+                            style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px;">
+                            <i class="fas fa-robot me-1"></i>
+                            AI-Powered Analytics
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="row mb-4">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="stat-card fade-in">
+                    <i class="fas fa-users stat-icon icon-students"></i>
+                    <div class="stat-number">{{ students|length or 5 }}</div>
+                    <div class="stat-label">Total Students</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="stat-card fade-in">
+                    <i class="fas fa-clipboard-list stat-icon icon-assessments"></i>
+                    <div class="stat-number">{{ assessments|length or 0 }}</div>
+                    <div class="stat-label">Assessments Completed</div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="stat-card fade-in">
+                    <i class="fas fa-robot stat-icon icon-ai"></i>
+                    <div class="stat-number">AI</div>
+                    <div class="stat-label">Analysis Ready</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions - Only functional buttons -->
+        <div class="row mb-4">
+            <div class="col-lg-6 col-md-6 mb-3">
+                <a href="/add_student" class="quick-action-card fade-in">
+                    <i class="fas fa-user-plus fa-2x mb-2"></i>
+                    <h5>Add Student</h5>
+                    <p class="mb-0">Register a new student</p>
+                </a>
+            </div>
+            <div class="col-lg-6 col-md-6 mb-3">
+                <a href="/enhanced_input_results" class="quick-action-card fade-in">
+                    <i class="fas fa-chart-line fa-2x mb-2"></i>
+                    <h5>Comprehensive Analysis</h5>
+                    <p class="mb-0">Input engagement & attainment data</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Recent Assessments -->
+            <div class="col-lg-8">
+                <div class="card fade-in">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clipboard-list me-2"></i>
+                            Recent Assessments
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if assessments %}
+                        <div class="table-responsive">
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Date</th>
+                                        <th>Score</th>
+                                        <th>Engagement</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for assessment in assessments %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ assessment.student.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ assessment.student.class_name }}</small>
+                                        </td>
+                                        <td>{{ assessment.assessment_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <span
+                                                class="badge bg-{% if assessment.score_percentage >= 80 %}success{% elif assessment.score_percentage >= 60 %}warning{% else %}danger{% endif %}">
+                                                {{ assessment.score_percentage|round|int }}%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ assessment.engagement_rate }}/9</span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('personalized_report', assessment_id=assessment.id) }}"
+                                                class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> View Report
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No assessments yet. Click "Comprehensive Analysis" to create your first assessment.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student List & AI Insights -->
+            <div class="col-lg-4">
+                <!-- Student List -->
+                <div class="card fade-in mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-users me-2"></i>
+                            Students
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if students %}
+                        {% for student in students %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                            <div>
+                                <strong>{{ student.name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ student.student_id }} - {{ student.class_name }}</small>
+                            </div>
+                            <a href="/enhanced_input_results" class="btn btn-sm btn-outline-primary" title="Assess">
+                                <i class="fas fa-clipboard-check"></i>
+                            </a>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-muted">No students added yet.</p>
+                        {% endif %}
+                        <div class="text-center mt-3">
+                            <a href="/add_student" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>Add New Student
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Insights -->
+                <div class="ai-insight-card fade-in">
+                    <h5 class="mb-3">
+                        <i class="fas fa-robot me-2"></i>
+                        AI Features
+                    </h5>
+                    <div class="mb-3">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Assessment System:</strong>
+                        <p class="mb-0 mt-1 opacity-75">
+                            Comprehensive analysis combining engagement rates (1-9) with attainment tracking
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <i class="fas fa-chart-trending-up me-2"></i>
+                        <strong>Key Features:</strong>
+                        <p class="mb-0 mt-1 opacity-75">
+                            • Engagement evidence tracking<br>
+                            • IGCSE grade predictions<br>
+                            • Personalized practice generation<br>
+                            • Weakness identification
+                        </p>
+                    </div>
+                    <a href="/enhanced_input_results" class="btn btn-light btn-sm">
+                        <i class="fas fa-rocket me-1"></i>
+                        Start Assessment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeAnimations();
+        });
+
+        function initializeAnimations() {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    el.style.transition = 'all 0.6s ease';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+    </script>
+</body>
+
+</html>
